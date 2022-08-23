@@ -2,6 +2,7 @@ import TelegramApi from "node-telegram-bot-api";
 import dotenv from "dotenv";
 
 import Options from "./options.js";
+import { commands } from "./constants.js";
 
 const { againGameOptions, gameOptions } = Options;
 
@@ -18,30 +19,31 @@ const startGame = async (chatId) => {
   return bot.sendMessage(chatId, "Отгадывай", gameOptions);
 };
 
+const textCommands = (commands) => {
+  return `Ты можешь использовать следующие команды: 
+    ${commands.map(
+      ({ command, description }) => `\r\n${command} - ${description}`
+    )};`;
+};
+
+const availableCommands = async (chatId) => {
+  await bot.sendMessage(chatId, textCommands(commands));
+};
+
 const start = () => {
   bot.on("message", async (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
     const userName = msg.from.username;
 
-    bot.setMyCommands([
-      { command: "/start", description: "приветствие" },
-      { command: "/info", description: "информация о тебе" },
-      { command: "/game", description: "игра - отгадай число" },
-    ]);
+    bot.setMyCommands(() => commands);
 
     if (text === "/start") {
       await bot.sendMessage(
         chatId,
         `Добро пожаловать в самый лучший телеграм бот!`
       );
-      await bot.sendMessage(
-        chatId,
-        `Ты можешь использовать следующе команды:
-              /info - информация о тебе;
-              /game - игра - отгадай число;
-              `
-      );
+      availableCommands(chatId);
       return bot.sendSticker(
         chatId,
         "https://tlgrm.ru/_/stickers/80a/5c9/80a5c9f6-a40e-47c6-acc1-44f43acc0862/256/17.webp"
@@ -54,6 +56,10 @@ const start = () => {
 
     if (text === "/game") {
       return startGame(chatId);
+    }
+
+    if (text === "/help") {
+      return availableCommands(chatId);
     }
 
     return bot.sendMessage(chatId, "выбири другую команду, я не понимаю(");
