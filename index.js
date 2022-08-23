@@ -39,51 +39,71 @@ const start = () => {
     bot.setMyCommands(() => commands);
 
     if (text === "/start") {
-      await bot.sendMessage(
-        chatId,
-        `Добро пожаловать в самый лучший телеграм бот!`
-      );
-      availableCommands(chatId);
-      return bot.sendSticker(
-        chatId,
-        "https://tlgrm.ru/_/stickers/80a/5c9/80a5c9f6-a40e-47c6-acc1-44f43acc0862/256/17.webp"
-      );
+      try {
+        await bot.sendMessage(
+          chatId,
+          `Добро пожаловать в самый лучший телеграм бот!`
+        );
+        availableCommands(chatId);
+        return bot.sendSticker(
+          chatId,
+          "https://tlgrm.ru/_/stickers/80a/5c9/80a5c9f6-a40e-47c6-acc1-44f43acc0862/256/17.webp"
+        );
+      } catch (e) {
+        console.log("error /start", e);
+      }
     }
 
     if (text === "/info") {
-      return bot.sendMessage(chatId, `Тебя зовут ${userName}`);
+      try {
+        return bot.sendMessage(chatId, `Тебя зовут ${userName}`);
+      } catch (e) {
+        console.log("error /info", e);
+      }
     }
 
     if (text === "/game") {
-      return startGame(chatId);
+      try {
+        return startGame(chatId);
+      } catch (e) {
+        console.log("error /game", e);
+      }
     }
 
     if (text === "/help") {
-      return availableCommands(chatId);
+      try {
+        return availableCommands(chatId);
+      } catch (e) {
+        console.log("error /game", e);
+      }
     }
 
     return bot.sendMessage(chatId, "выбири другую команду, я не понимаю(");
   });
 
   bot.on("callback_query", async (msg) => {
-    const data = msg.data;
-    const chatId = msg.message.chat.id;
+    try {
+      const data = msg.data;
+      const chatId = msg.message.chat.id;
 
-    if (data === "/again") {
-      return startGame(chatId);
-    }
-    if (+data === chats[chatId]) {
-      return bot.sendMessage(
-        chatId,
-        `Ты справился, загаданное число - ${chats[chatId]}`,
-        againGameOptions
-      );
-    } else {
-      return bot.sendMessage(
-        chatId,
-        `К сожалению, ты ошибся. Я задал цифру ${chats[chatId]}`,
-        againGameOptions
-      );
+      if (data === "/again") {
+        return startGame(chatId);
+      }
+      if (+data === chats[chatId]) {
+        return bot.sendMessage(
+          chatId,
+          `Ты справился, загаданное число - ${chats[chatId]}`,
+          againGameOptions
+        );
+      } else {
+        return bot.sendMessage(
+          chatId,
+          `К сожалению, ты ошибся. Я задал цифру ${chats[chatId]}`,
+          againGameOptions
+        );
+      }
+    } catch (e) {
+      console.log("callback_query error", e);
     }
   });
 };
